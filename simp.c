@@ -48,7 +48,7 @@ int hasChar(char c, char *string){
     return -1;
 }
 
-void sumStrByInd(char *str, char *newStr, int ind){
+void concStrByInd(char *str, char *newStr, int ind){
     int i;
     for(i=0; newStr[i] != '\0'; i++){
         str[ind] = newStr[i];
@@ -72,7 +72,21 @@ List *deMorgan(List *l){
                         j++;
                     }while(l->info[ind] != '\0');
                     l->info[index] = ')';
-                    sumStrByInd(l->info, new, index+1);
+                    concStrByInd(l->info, new, index+1);
+                } else {
+                    List *aux = (List *)malloc(sizeof(List));
+                    aux->info[0] = '~';
+                    aux->info[1] = '(';
+                    int j, k=2;
+                    for(j= i+3 ; l->info[j] != '\0' ; j++){
+                        aux->info[k] = l->info[j];
+                        k++;
+                    }
+                    l->info[i+3] = ')';
+                    l->info[i+4] = '\0';
+                    aux->info[k] = '\0';
+                    aux->next = l->next;
+                    l->next = aux;
                 }
             }
         }
@@ -82,7 +96,7 @@ List *deMorgan(List *l){
 }
 
 int main(){
-    char exp[20] = "~(A+B)+~(A)B+AB";
+    char exp[20] = "~(A+B)+~(AB)+AB";
     List *list = createLists(exp);
     list = deMorgan(list);
     printf("\n%s", exp);
