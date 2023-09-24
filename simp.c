@@ -7,12 +7,16 @@ typedef struct list{
 }List;
 
 List *createLists(char *exp){
-    int i, j=0;
+    int i, j=0, countParentheses=0;
     List *l = (List *)malloc(sizeof(List)); 
     l->next = NULL;
     List *aux = l;
     for(i=0; exp[i]!='\0' ;i++){ 
-        if(exp[i] == '+'){
+        if(exp[i] == '(')
+            countParentheses++;
+        if(exp[i] == ')')
+            countParentheses--;
+        if(exp[i] == '+' && countParentheses == 0){
             aux->info[j] =  '\0';
             j = -1;
             List *new = (List *)malloc(sizeof(List));
@@ -25,22 +29,63 @@ List *createLists(char *exp){
     return l;
 }
 
-char deMorgan(char o){
-    return o;
+void printList(List *list){
+    List *l = list->next;
+    printf("\n%s", list->info);
+    while(l != NULL){
+        printf(" + %s", l->info);
+        l = l->next;
+    }
+    printf("\n\n");
 }
 
-void printList(List *l){
-    List *aux = l->next;
-    printf("%s", l->info);
-    while(aux != NULL){
-        printf(" + %s", aux->info);
-        aux = aux->next;
+int hasChar(char c, char *string){
+    int i;
+    for(i=0; string[i] != '\0'; i++){
+        if(string[i] == c)
+            return i;
+    }
+    return -1;
+}
+
+void sumStrByInd(char *str, char *newStr, int ind){
+    int i;
+    for(i=0; newStr[i] != '\0'; i++){
+        str[ind] = newStr[i];
+        ind++;
     }
 }
 
+List *deMorgan(List *l){
+    if(l != NULL){
+        int i;
+        for(i=0; l->info[i]!='\0'; i++){
+            if(l->info[i] == '~' && l->info[i+3] != ')'){
+                int ind = hasChar('+', l->info), index = ind;
+                if(ind != -1){
+                    char new[20] = "~(";
+                    int j = 2; 
+                    ind++;
+                    do{
+                        new[j] = l->info[ind];
+                        ind++;
+                        j++;
+                    }while(l->info[ind] != '\0');
+                    l->info[index] = ')';
+                    sumStrByInd(l->info, new, index+1);
+                }
+            }
+        }
+        l->next = deMorgan(l->next);
+    }
+    return l;
+}
+
 int main(){
-    char exp[20] = "'(AB)+'(A)B";
+    char exp[20] = "~(A+B)+~(A)B+AB";
     List *list = createLists(exp);
+    list = deMorgan(list);
+    printf("\n%s", exp);
     printList(list);
     return 1;
 }
