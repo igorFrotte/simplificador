@@ -6,11 +6,17 @@ typedef struct list{
     struct list *next;
 }List;
 
+char toUpperCase(char c){
+    if(c <= 'z' && c >= 'a')
+        c = (c - 'a') + 'A';
+    return c; 
+}
+
 List *createLists(char *exp){
     int i, j=0, countParentheses=0;
     List *l = (List *)malloc(sizeof(List)); 
-    l->next = NULL;
     List *aux = l;
+    l->next = NULL;
     for(i=0; exp[i]!='\0' ;i++){ 
         if(exp[i] == '(')
             countParentheses++;
@@ -57,46 +63,11 @@ void concStrByInd(char *str, char *newStr, int ind){
 }
 
 List *deMorgan(List *l){
-    if(l != NULL){
-        int i;
-        for(i=0; l->info[i]!='\0'; i++){
-            if(l->info[i] == '~' && l->info[i+3] != ')'){
-                int ind = hasChar('+', l->info), index = ind;
-                if(ind != -1){
-                    char new[20] = "~(";
-                    int j = 2; 
-                    ind++;
-                    do{
-                        new[j] = l->info[ind];
-                        ind++;
-                        j++;
-                    }while(l->info[ind] != '\0');
-                    l->info[index] = ')';
-                    concStrByInd(l->info, new, index+1);
-                } else {
-                    List *aux = (List *)malloc(sizeof(List));
-                    aux->info[0] = '~';
-                    aux->info[1] = '(';
-                    int j, k=2;
-                    for(j= i+3 ; l->info[j] != '\0' ; j++){
-                        aux->info[k] = l->info[j];
-                        k++;
-                    }
-                    l->info[i+3] = ')';
-                    l->info[i+4] = '\0';
-                    aux->info[k] = '\0';
-                    aux->next = l->next;
-                    l->next = aux;
-                }
-            }
-        }
-        l->next = deMorgan(l->next);
-    }
     return l;
 }
 
 int main(){
-    char exp[20] = "~(A+B)+~(AB)+AB";
+    char exp[40] = "~(A+B+C)+~((AB)+C)+AB";
     List *list = createLists(exp);
     list = deMorgan(list);
     printf("\n%s", exp);
