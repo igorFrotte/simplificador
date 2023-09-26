@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 typedef struct list{
-    char info[20];
+    char info[100];
     struct list *next;
 }List;
 
@@ -12,25 +12,46 @@ char toUpperCase(char c){
     return c; 
 }
 
+int hasChar(char c, char *string){
+    int i;
+    for(i=0; string[i] != '\0'; i++){
+        if(string[i] == c)
+            return i;
+    }
+    return -1;
+}
+
+void strCopyByIndex(char *origin, int iOrigin, char *copy, int iCopy){
+    do{
+        copy[iCopy] = origin[iOrigin];
+        iOrigin++;
+        iCopy++;
+    }while(origin[iOrigin] != '\0');       
+}
+
+List *separator(List *l, int index){
+    List *aux, *new = (List *)malloc(sizeof(List)); 
+    l->info[index] = '\0';
+    strCopyByIndex(l->info, index+1, new->info, 0);
+    aux = l->next;
+    l->next = new;
+    new->next = aux;
+    return l;
+}
+
 List *createLists(char *exp){
-    int i, j=0, countParentheses=0;
     List *l = (List *)malloc(sizeof(List)); 
-    List *aux = l;
+    strCopyByIndex(exp, 0, l->info, 0);
     l->next = NULL;
+    int i, countParentheses=0;
     for(i=0; exp[i]!='\0' ;i++){ 
         if(exp[i] == '(')
             countParentheses++;
         if(exp[i] == ')')
             countParentheses--;
         if(exp[i] == '+' && countParentheses == 0){
-            aux->info[j] =  '\0';
-            j = -1;
-            List *new = (List *)malloc(sizeof(List));
-            aux->next = new;
-            aux = aux->next; 
-        }else
-            aux->info[j] =  exp[i];
-        j++;
+            
+        }
     }
     return l;
 }
@@ -43,15 +64,6 @@ void printList(List *list){
         l = l->next;
     }
     printf("\n\n");
-}
-
-int hasChar(char c, char *string){
-    int i;
-    for(i=0; string[i] != '\0'; i++){
-        if(string[i] == c)
-            return i;
-    }
-    return -1;
 }
 
 void concStrByInd(char *str, char *newStr, int ind){
@@ -67,7 +79,7 @@ List *deMorgan(List *l){
 }
 
 int main(){
-    char exp[40] = "~(A+B+C)+~((AB)+C)+AB";
+    char exp[] = "~(A+B+C)+~((AB)+C)+AB";
     List *list = createLists(exp);
     list = deMorgan(list);
     printf("\n%s", exp);
