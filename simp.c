@@ -26,16 +26,29 @@ void strCopyByIndex(char *origin, int iOrigin, char *copy, int iCopy){
         copy[iCopy] = origin[iOrigin];
         iOrigin++;
         iCopy++;
-    }while(origin[iOrigin] != '\0');       
+    }while(origin[iOrigin] != '\0');     
+    printf("\n\nwwerwe --  %s", origin);  
+    printf("\n\nwwerwe --  %s\n\n", copy);
 }
 
-List *separator(List *l, int index){
-    List *aux, *new = (List *)malloc(sizeof(List)); 
-    l->info[index] = '\0';
-    strCopyByIndex(l->info, index+1, new->info, 0);
-    aux = l->next;
-    l->next = new;
-    new->next = aux;
+List *separator(List *l){
+    int i, countParentheses=0;
+    for(i=0; l->info[i] != '\0' ;i++){ 
+        if(l->info[i] == '(')
+            countParentheses++;
+        if(l->info[i] == ')')
+            countParentheses--;
+        if(l->info[i] == '+' && countParentheses == 0){
+            List *aux, *new = (List *)malloc(sizeof(List)); 
+            l->info[i] = '\0';
+            strCopyByIndex(l->info, i+1, new->info, 0);
+            aux = l->next;
+            l->next = new;
+            new->next = aux;
+            l->next = separator(l->next);
+            break;
+        }
+    }
     return l;
 }
 
@@ -43,16 +56,7 @@ List *createLists(char *exp){
     List *l = (List *)malloc(sizeof(List)); 
     strCopyByIndex(exp, 0, l->info, 0);
     l->next = NULL;
-    int i, countParentheses=0;
-    for(i=0; exp[i]!='\0' ;i++){ 
-        if(exp[i] == '(')
-            countParentheses++;
-        if(exp[i] == ')')
-            countParentheses--;
-        if(exp[i] == '+' && countParentheses == 0){
-            
-        }
-    }
+    l = separator(l);
     return l;
 }
 
@@ -79,7 +83,7 @@ List *deMorgan(List *l){
 }
 
 int main(){
-    char exp[] = "~(A+B+C)+~((AB)+C)+AB";
+    char exp[] = "~(A+B+C)+~((AB)+C)+AB+CA";
     List *list = createLists(exp);
     list = deMorgan(list);
     printf("\n%s", exp);
