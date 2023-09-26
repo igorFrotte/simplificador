@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 typedef struct list{
-    char info[100];
+    char info[80];
     struct list *next;
 }List;
 
@@ -27,12 +27,10 @@ void strCopyByIndex(char *origin, int iOrigin, char *copy, int iCopy){
         iOrigin++;
         iCopy++;
     }while(origin[iOrigin] != '\0');     
-    printf("\n\nwwerwe --  %s", origin);  
-    printf("\n\nwwerwe --  %s\n\n", copy);
 }
 
 List *separator(List *l){
-    int i, countParentheses=0;
+    int i, countParentheses = 0;
     for(i=0; l->info[i] != '\0' ;i++){ 
         if(l->info[i] == '(')
             countParentheses++;
@@ -70,22 +68,31 @@ void printList(List *list){
     printf("\n\n");
 }
 
-void concStrByInd(char *str, char *newStr, int ind){
-    int i;
-    for(i=0; newStr[i] != '\0'; i++){
-        str[ind] = newStr[i];
-        ind++;
-    }
+List *deMorgan(List *l){
+    printf("\n\neefwe==== %s\n\n", l->info);
+    return l;
 }
 
-List *deMorgan(List *l){
+List *trigger(List *l){
+    if(l != NULL){
+        int cont = 0;
+        while(cont == 0){
+            int i;
+            cont = 1;
+            for(i=0; l->info[i] != '\0'; i++){
+                if(l->info[i] == '~' && l->info[i+1] == '(')
+                    l = deMorgan(l);
+            }
+        }
+        l->next = trigger(l->next);
+    }
     return l;
 }
 
 int main(){
     char exp[] = "~(A+B+C)+~((AB)+C)+AB+CA";
     List *list = createLists(exp);
-    list = deMorgan(list);
+    list = trigger(list);
     printf("\n%s", exp);
     printList(list);
     return 1;
