@@ -69,7 +69,17 @@ void printList(List *list){
 }
 
 List *deMorgan(List *l){
-    printf("\n\neefwe==== %s\n\n", l->info);
+    int iNeg = 0, i, j = 0;
+    char newStr[80];
+    for(i=0; l->info[i] != '\0'; i++)
+        if(l->info[i] == '~' && l->info[i+1] == '(')
+            iNeg = i;
+    for(i=iNeg+2; l->info[i] != ')'; i++){
+        newStr[j] = l->info[i];
+        j++;
+    }
+    newStr[j] = '\0';
+    printf("\n\nwefewgfew ---  %s\n\n", newStr);
     return l;
 }
 
@@ -90,7 +100,7 @@ List *trigger(List *l){
 }
 
 int main(){
-    char exp[] = "~(A+B+C)+~((AB)+C)+AB+CA";
+    char exp[] = "~(A+B+C)+~(~(A+B)+~C)+AB+CA";
     List *list = createLists(exp);
     list = trigger(list);
     printf("\n%s", exp);
