@@ -17,6 +17,8 @@ int firstChar(char c, char *string, int indInit){
     for(i=indInit; string[i] != '\0'; i++){
         if(string[i] == c)
             return i;
+        if(c == '\0' && string[i+1] == c)
+            return i;
     }
     return -1;
 }
@@ -93,16 +95,29 @@ List *createLists(char *exp){
 
 void printList(List *list){
     List *l = list->next;
-    printf("\n%s", list->info);
+    printf("\n\n%s", list->info);
     while(l != NULL){
         printf(" + %s", l->info);
         l = l->next;
     }
-    printf("\n\n");
+    printf("\n");
+}
+
+void simplify(char *str){
+    int i;
+    for(i=0; str[i] != '\0'; i++){
+        if(str[i] == '~' && str[i+1] == '(' && str[i+3] == ')'){
+            str[i+1] = str[i+2];
+            if(str[i+4] != '\0')
+                strCopyPart(str, i+4, 99, str, i+2);
+            else
+                str[i+2] = '\0';
+        }
+    }
 }
 
 void deMorgan(char *str){
-    printf("\nAplicando DeMorgan em: %s", str);
+    printf("\n\nAplicando DeMorgan: %s", str);
     int ind = firstChar('+', str, 0);
     char new[80];
     if(ind == -1){
@@ -120,8 +135,8 @@ void deMorgan(char *str){
         new[ind+2] = '(';
         strCopyPart(str, ind+1, 99, new, ind+3); 
     }
-    
     strCopyPart(new, 0, 99, str, 0);
+    simplify(str);
     printf("\nResultado DeMorgan: %s", str);
 }
 
@@ -144,16 +159,19 @@ List *deeper(List *l){
         int phaInternOpen = lastChar('(', l->info);
         if(phaInternOpen != -1){
             int phaInternClose = firstChar(')', l->info, phaInternOpen);
-            char str[80];
+            char str[80], aux[80];
             int init = backTrack(l->info, phaInternOpen);
             int final = afterTrack(l->info, phaInternClose);
             strCopyPart(l->info, init, final, str, 0);
-            printf("\n\nstring: %s\n\n", str);
             trigger(str);
+            strCopyPart(l->info, final+1, 99, aux, 0);
+            strCopyPart(str, 0, 99, l->info, init);
+            final = firstChar('\0', l->info, 0);
+            strCopyPart(aux, 0, 99, l->info, final+1);
         } else {
-            printf("\n\nstring: %s\n\n", l->info);
             trigger(l->info);
         }
+        l = separator(l);
         l->next=deeper(l->next);
     }
     return l;
@@ -162,8 +180,10 @@ List *deeper(List *l){
 int main(){
     char exp[] = "~(A+B+C)+~(AC(A+B)B+~C)+~(ABC)+CA";
     List *list = createLists(exp);
-    list = deeper(list);
     printf("\n%s", exp);
+    list = deeper(list);    
+    printList(list);
+    list = deeper(list);
     printList(list);
     return 1;
 }
