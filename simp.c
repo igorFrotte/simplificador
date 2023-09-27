@@ -12,15 +12,41 @@ char toUpperCase(char c){
     return c; 
 }
 
-int hasChar(char c, char *string){
+int firstChar(char c, char *string, int indInit){
     int i;
-    for(i=0; string[i] != '\0'; i++){
+    for(i=indInit; string[i] != '\0'; i++){
         if(string[i] == c)
             return i;
     }
     return -1;
 }
 
+int lastChar(char c, char *string){
+    int i, j = -1;
+    for(i=0; string[i] != '\0'; i++){
+        if(string[i] == c)
+            j = i;
+    }
+    return j;
+}
+
+void strCopyPart(char *origin, int originInit, int originFinal, char *copy, int copyInit){
+    while(origin[originInit] != '\0' && originInit <= originFinal){
+        copy[copyInit] = origin[originInit];
+        originInit++;
+        copyInit++;
+    }
+    copy[copyInit] = '\0';
+}
+
+int backTrack(char *string, int ind){
+    if(ind != 0)
+        ind--;
+    for(ind; (string[ind] <= 'Z' && string[ind] >= 'A' && ind != 0) ||  string[ind] == '~'; ind--){}
+    return ind+1;
+}
+
+//tirar
 void strCopyByIndex(char *origin, int iOrigin, char *copy, int iCopy){
     do{
         copy[iCopy] = origin[iOrigin];
@@ -68,7 +94,17 @@ void printList(List *list){
     printf("\n\n");
 }
 
-List *deMorgan(List *l){
+void deMorgan(char *str){
+    printf("\nAplicando DeMorgan em: ~(%s)\n", str);
+    int i, indOr = firstChar('+', str, 0);
+    if(indOr != -1){
+        //implementar DeMorgan
+    }
+
+    printf("\nResultado DeMorgan: %s\n", str);
+}
+
+List *triggerDeMorgan(List *l){
     int iNeg = 0, i, j = 0;
     char newStr[80];
     for(i=0; l->info[i] != '\0'; i++)
@@ -79,7 +115,8 @@ List *deMorgan(List *l){
         j++;
     }
     newStr[j] = '\0';
-    printf("\n\nwefewgfew ---  %s\n\n", newStr);
+    deMorgan(newStr);
+    
     return l;
 }
 
@@ -90,8 +127,10 @@ List *trigger(List *l){
             int i;
             cont = 1;
             for(i=0; l->info[i] != '\0'; i++){
-                if(l->info[i] == '~' && l->info[i+1] == '(')
-                    l = deMorgan(l);
+                if(l->info[i] == '~' && l->info[i+1] == '('){
+                    l = triggerDeMorgan(l);
+                    break;
+                }
             }
         }
         l->next = trigger(l->next);
@@ -99,10 +138,27 @@ List *trigger(List *l){
     return l;
 }
 
+List *deeper(List *l){
+    if(l != NULL){
+        int phaInternOpen = lastChar('(', l->info);
+        if(phaInternOpen != -1){
+            int phaInternClose = firstChar(')', l->info, phaInternOpen);
+            char str[80];
+            int init = backTrack(l->info, phaInternOpen);
+            strCopyPart(l->info, init, phaInternClose, str, 0);
+            printf("\n\nstring: %s\n\n", str);
+        } else {
+            printf("\n\nstring: %s\n\n", l->info);
+        }
+        l->next=deeper(l->next);
+    }
+    return l;
+}
+
 int main(){
-    char exp[] = "~(A+B+C)+~(~(A+B)+~C)+AB+CA";
+    char exp[] = "~(A+B+C)+~(ABC(A+B)+~C)+AB+CA";
     List *list = createLists(exp);
-    list = trigger(list);
+    list = deeper(list);
     printf("\n%s", exp);
     printList(list);
     return 1;
