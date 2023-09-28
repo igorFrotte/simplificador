@@ -55,15 +55,6 @@ int afterTrack(char *string, int ind){
     return ind-1;
 }
 
-//tirar
-void strCopyByIndex(char *origin, int iOrigin, char *copy, int iCopy){
-    do{
-        copy[iCopy] = origin[iOrigin];
-        iOrigin++;
-        iCopy++;
-    }while(origin[iOrigin] != '\0');     
-}
-
 List *separator(List *l){
     int i, countParentheses = 0;
     for(i=0; l->info[i] != '\0' ;i++){ 
@@ -74,7 +65,7 @@ List *separator(List *l){
         if(l->info[i] == '+' && countParentheses == 0){
             List *aux, *new = (List *)malloc(sizeof(List)); 
             l->info[i] = '\0';
-            strCopyByIndex(l->info, i+1, new->info, 0);
+            strCopyPart(l->info, i+1, 99, new->info, 0);
             aux = l->next;
             l->next = new;
             new->next = aux;
@@ -87,7 +78,7 @@ List *separator(List *l){
 
 List *createLists(char *exp){
     List *l = (List *)malloc(sizeof(List)); 
-    strCopyByIndex(exp, 0, l->info, 0);
+    strCopyPart(exp, 0, 99, l->info, 0);
     l->next = NULL;
     l = separator(l);
     return l;
@@ -179,11 +170,12 @@ List *deeper(List *l){
 
 int main(){
     char exp[] = "~(A+B+C)+~(AC(A+B)B+~C)+~(ABC)+CA";
+    int i;
     List *list = createLists(exp);
     printf("\n%s", exp);
-    list = deeper(list);    
-    printList(list);
-    list = deeper(list);
-    printList(list);
+    for(i=0; i<4; i++){
+        list = deeper(list);
+        printList(list);
+    }
     return 1;
 }
