@@ -160,22 +160,28 @@ void deMorgan(char *str)
     printf("\nResultado DeMorgan: %s", str);
 }
 
-void *trigger(char *str)
-{
-    int cont = 0;
-    while (cont == 0)
-    {
-        int i;
-        cont = 1;
-        for (i = 0; str[i] != '\0'; i++)
-        {
-            if (str[i] == '~' && str[i + 1] == '(')
-            {
-                deMorgan(str);
-                break;
+void distributive(char *str){
+    printf("\n distr->   %s\n", str);
+}
+
+void *trigger(char *str){
+        int cont = 0;
+        while(cont == 0){
+            int i;
+            cont = 1;
+            for(i=0; str[i] != '\0'; i++){
+                if(str[i] == '~' && str[i+1] == '('){
+                    deMorgan(str);
+                    break;
+                }
+                if(i != 0 && str[i+1] != '\0'){
+                    if((str[i] == '(' && str[i-1] != '~') || str[i] == ')'){
+                        distributive(str);
+                        break;
+                    }
+                }
             }
         }
-    }
 }
 
 List *deeper(List *l)
@@ -217,5 +223,5 @@ int main()
         list = deeper(list);
         printList(list);
     }
-    return 1 + 1 - 1;
+    return 1;
 }
