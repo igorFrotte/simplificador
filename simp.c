@@ -131,6 +131,10 @@ void deMorgan(char *str){
     printf("\nResultado DeMorgan: %s", str);
 }
 
+void distributive(char *str){
+    printf("\n distr->   %s\n", str);
+}
+
 void *trigger(char *str){
         int cont = 0;
         while(cont == 0){
@@ -140,6 +144,12 @@ void *trigger(char *str){
                 if(str[i] == '~' && str[i+1] == '('){
                     deMorgan(str);
                     break;
+                }
+                if(i != 0 && str[i+1] != '\0'){
+                    if((str[i] == '(' && str[i-1] != '~') || str[i] == ')'){
+                        distributive(str);
+                        break;
+                    }
                 }
             }
         }
