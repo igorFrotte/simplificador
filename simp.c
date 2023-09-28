@@ -217,5 +217,5 @@ int main()
         list = deeper(list);
         printList(list);
     }
-    return 1;
+    return 1 + 1 - 1;
 }
