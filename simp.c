@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 
 typedef struct list
 {
@@ -7,12 +9,10 @@ typedef struct list
     struct list *next;
 } List;
 
-char toUpperCase(char c)
-{
-    if (c <= 'z' && c >= 'a')
-        c = (c - 'a') + 'A';
-    return c;
-}
+// Header:
+char *cleanInput(const char *dirty_str);
+char *convertXor(char *str);
+// ---------------------------------------
 
 int firstChar(char c, char *string, int indInit)
 {
@@ -160,28 +160,35 @@ void deMorgan(char *str)
     printf("\nResultado DeMorgan: %s", str);
 }
 
-void distributive(char *str){
+void distributive(char *str)
+{
     printf("\n distr->   %s\n", str);
 }
 
-void *trigger(char *str){
-        int cont = 0;
-        while(cont == 0){
-            int i;
-            cont = 1;
-            for(i=0; str[i] != '\0'; i++){
-                if(str[i] == '~' && str[i+1] == '('){
-                    deMorgan(str);
+void *trigger(char *str)
+{
+    int cont = 0;
+    while (cont == 0)
+    {
+        int i;
+        cont = 1;
+        for (i = 0; str[i] != '\0'; i++)
+        {
+            if (str[i] == '~' && str[i + 1] == '(')
+            {
+                deMorgan(str);
+                break;
+            }
+            if (i != 0 && str[i + 1] != '\0')
+            {
+                if ((str[i] == '(' && str[i - 1] != '~') || str[i] == ')')
+                {
+                    distributive(str);
                     break;
-                }
-                if(i != 0 && str[i+1] != '\0'){
-                    if((str[i] == '(' && str[i-1] != '~') || str[i] == ')'){
-                        distributive(str);
-                        break;
-                    }
                 }
             }
         }
+    }
 }
 
 List *deeper(List *l)
@@ -214,14 +221,104 @@ List *deeper(List *l)
 
 int main()
 {
-    char exp[] = "~(A+B+C)+~(AC(A+B)B+~C)+~(ABC)+CA";
-    int i;
-    List *list = createLists(exp);
-    printf("\n%s", exp);
-    for (i = 0; i < 4; i++)
-    {
-        list = deeper(list);
-        printList(list);
-    }
+
+    char *exp = cleanInput("A#B");
+    exp = convertXor(exp);
+    puts(exp);
+    // int i;
+    // List *list = createLists(exp);
+    // printf("\n%s", exp);
+    // for (i = 0; i < 4; i++)
+    // {
+    //     list = deeper(list);
+    //     printList(list);
+    // }
+
+    free(exp);
     return 1;
 }
+
+// Text functions:
+char *convertXor(char *str)
+{
+    int i = 0;
+    int xor_cont = 0;
+    int len = strlen(str);
+    int new_len = len;
+
+    for (i = 0; i < len; i++)
+    {
+        if (str[i] == '#')
+        {
+            xor_cont++;
+        }
+    }
+    if (xor_cont == 0)
+    {
+        return str;
+    }
+
+    new_len = xor_cont * 6 + len;
+
+    char *new_str = malloc(new_len * sizeof(char));
+
+    // ~AB+A~B
+    // A#B
+    for (i = 0; i < len; i++)
+    {
+        if (isalpha(str[i]) && str[i + 1] == '#' && isalpha(str[i + 2]))
+        {
+            new_str[i] = '~';
+            new_str[i + 1] = str[i];
+            new_str[i + 2] = str[i + 2];
+            new_str[i + 3] = '+';
+            new_str[i + 4] = str[i];
+            new_str[i + 5] = '~';
+            new_str[i + 6] = str[i + 2];
+        }
+        else if (str[i] != '#')
+        {
+            new_str[i] = str[i];
+        }
+    }
+
+    new_str[new_len] = '\0';
+    return new_str;
+}
+
+char *cleanInput(const char *dirty_str) // Cleans and standardizes possible inputs
+{
+    int i = 0, j = 0;
+    int trash = 0;
+
+    int len = strlen(dirty_str);
+
+    char *clean_str = malloc(len * sizeof(char));
+
+    for (i = 0; i < len; i++)
+    {
+        clean_str[i] = toupper(dirty_str[i]); // copy input passing all to upper Case
+
+        if (clean_str[i] == '\'') // replaces " ' " with " ~ "
+        {
+            clean_str[i] = '~';
+        }
+    }
+    for (i = 0; i < len; i++) // remove spaces
+    {
+        if (clean_str[i] == ' ')
+        {
+            for (j = i; clean_str[j] != '\0'; j++)
+            {
+                clean_str[j] = clean_str[j + 1];
+            }
+            trash++;
+            i--;
+        }
+    }
+
+    clean_str[len - trash] = '\0';
+
+    return clean_str;
+}
+//---------------------------------------------------
