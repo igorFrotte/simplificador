@@ -10,7 +10,8 @@ typedef struct list
 } List;
 
 // Header:
-char *cleanInput(char *dirty_str);
+char *cleanInput(const char *dirty_str);
+char *convertXor(char *str);
 // ---------------------------------------
 
 int firstChar(char c, char *string, int indInit)
@@ -221,23 +222,71 @@ List *deeper(List *l)
 int main()
 {
 
-    char *exp = cleanInput("'(a+B+C) + ~(AC(A+b)B + ~C)+'(AB C) + cA");
-    int i;
-    List *list = createLists(exp);
-    printf("\n%s", exp);
-    for (i = 0; i < 4; i++)
-    {
-        list = deeper(list);
-        printList(list);
-    }
+    char *exp = cleanInput("A#B");
+    exp = convertXor(exp);
+    puts(exp);
+    // int i;
+    // List *list = createLists(exp);
+    // printf("\n%s", exp);
+    // for (i = 0; i < 4; i++)
+    // {
+    //     list = deeper(list);
+    //     printList(list);
+    // }
 
     free(exp);
     return 1;
 }
 
 // Text functions:
+char *convertXor(char *str)
+{
+    int i = 0;
+    int xor_cont = 0;
+    int len = strlen(str);
+    int new_len = len;
 
-char *cleanInput(char *dirty_str) // Cleans and standardizes possible inputs
+    for (i = 0; i < len; i++)
+    {
+        if (str[i] == '#')
+        {
+            xor_cont++;
+        }
+    }
+    if (xor_cont == 0)
+    {
+        return str;
+    }
+
+    new_len = xor_cont * 6 + len;
+
+    char *new_str = malloc(new_len * sizeof(char));
+
+    // ~AB+A~B
+    // A#B
+    for (i = 0; i < len; i++)
+    {
+        if (isalpha(str[i]) && str[i + 1] == '#' && isalpha(str[i + 2]))
+        {
+            new_str[i] = '~';
+            new_str[i + 1] = str[i];
+            new_str[i + 2] = str[i + 2];
+            new_str[i + 3] = '+';
+            new_str[i + 4] = str[i];
+            new_str[i + 5] = '~';
+            new_str[i + 6] = str[i + 2];
+        }
+        else if (str[i] != '#')
+        {
+            new_str[i] = str[i];
+        }
+    }
+
+    new_str[new_len] = '\0';
+    return new_str;
+}
+
+char *cleanInput(const char *dirty_str) // Cleans and standardizes possible inputs
 {
     int i = 0, j = 0;
     int trash = 0;
